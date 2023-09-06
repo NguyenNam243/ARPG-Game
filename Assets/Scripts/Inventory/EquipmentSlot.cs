@@ -4,12 +4,12 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class InventorySlot : MonoBehaviour
+public class EquipmentSlot : MonoBehaviour
 {
     public Image iconImg = null;
 
     public bool HasItem { get; private set; }
-    public itemModel itemModel = null;
+
 
     public static UnityEvent<InventorySlot> EquipEvent = new UnityEvent<InventorySlot>();
 
@@ -25,7 +25,6 @@ public class InventorySlot : MonoBehaviour
 
     public void Attach(itemModel data)
     {
-        this.itemModel = data;
         HasItem = true;
         ItemObject itemObj = Resources.Load<ItemObject>("Object/Items/" + data.itemName);
         iconImg.sprite = itemObj.itemIcon;
@@ -39,10 +38,7 @@ public class InventorySlot : MonoBehaviour
 
     private void OnEquip(InventorySlot slot)
     {
-        if (slot == this)
-            return;
-
-        if (Vector3.Distance(transform.position, Input.mousePosition) <= rect.sizeDelta.x / 2)
+        if (Vector3.Distance(transform.position, Input.mousePosition) <= rect.sizeDelta.x)
         {
             slot.iconImg.enabled = false;
             slot.iconImg.rectTransform.anchoredPosition = Vector2.zero;
