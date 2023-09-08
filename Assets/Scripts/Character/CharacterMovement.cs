@@ -58,8 +58,15 @@ public class CharacterMovement : MonoBehaviour
         grounded = Physics.CheckSphere(groundCheck.position, 0.2f, groundMask);
 
         // ================= Character =========================== //
-        motion = transform.forward * moveZ + transform.right * moveX;
+        motion = cameraFollow.forward * moveZ + transform.right * moveX;
         _controller.Move(motion * moveSpeed * Time.deltaTime);
+
+        if (moveZ > 0)
+        {
+            Quaternion targetQuaternion = Quaternion.Euler(0, mouseX, 0);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetQuaternion, lerpRate * Time.deltaTime);
+        }
+
 
         if (grounded)
             velocity.y = -1;
@@ -81,23 +88,7 @@ public class CharacterMovement : MonoBehaviour
         cameraFollow.rotation = Quaternion.Slerp(cameraFollow.rotation, cameraRotation, lerpRate * Time.deltaTime);
         cameraFollow.position = transform.position + Vector3.up * cameraTargetOffset.y + transform.right * cameraTargetOffset.x + transform.forward * cameraTargetOffset.z;
 
-        Quaternion characterRotation = Quaternion.Euler(0, mouseX, 0);
-        transform.rotation = Quaternion.Slerp(transform.rotation, characterRotation, lerpRate * Time.deltaTime);
+       
+        
     }
-
-
-    private void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        Debug.Log("hit");
-    }
-
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(groundCheck.position, 0.2f);
-    }
-
-
-
 }
