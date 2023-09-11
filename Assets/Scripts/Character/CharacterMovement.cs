@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class CharacterMovement : MonoBehaviour
@@ -16,8 +17,15 @@ public class CharacterMovement : MonoBehaviour
     public float moveSpeed = 10f;
     public float gravity = -5f;
     public float jumpHeight = 1f;
+    public float weaponAngelXOffset = 15;
     public Transform groundCheck = null;
+    public Transform weapon = null;
+    public Transform spawmBulletPoint = null;
     public LayerMask groundMask;
+    public LayerMask bulletContactMask;
+    public float fireDelayTime = 0.2f;
+    public GameObject bulletObj = null;
+
 
 
     private float mouseX;
@@ -61,11 +69,8 @@ public class CharacterMovement : MonoBehaviour
         motion = cameraFollow.forward * moveZ + transform.right * moveX;
         _controller.Move(motion * moveSpeed * Time.deltaTime);
 
-        if (moveZ > 0)
-        {
-            Quaternion targetQuaternion = Quaternion.Euler(0, mouseX, 0);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetQuaternion, lerpRate * Time.deltaTime);
-        }
+        Quaternion targetQuaternion = Quaternion.Euler(0, mouseX, 0);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetQuaternion, lerpRate * Time.deltaTime);
 
 
         if (grounded)
@@ -79,6 +84,22 @@ public class CharacterMovement : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
 
         _controller.Move(velocity * Time.deltaTime);
+
+
+        if (Input.GetMouseButton(0))
+        {
+            Vector3 fireTarget = GetFireTarget();
+            if (fireTarget == Vector3.zero)
+                return;
+
+            if (countTime == 0)
+                Fire(fireTarget);
+
+            countTime += Time.deltaTime;
+
+            if (countTime >= fireDelayTime)
+                countTime = 0;
+        }
     }
 
     private void LateUpdate()
@@ -88,7 +109,30 @@ public class CharacterMovement : MonoBehaviour
         cameraFollow.rotation = Quaternion.Slerp(cameraFollow.rotation, cameraRotation, lerpRate * Time.deltaTime);
         cameraFollow.position = transform.position + Vector3.up * cameraTargetOffset.y + transform.right * cameraTargetOffset.x + transform.forward * cameraTargetOffset.z;
 
-       
-        
+        Quaternion weaponRotation = Quaternion.Euler(cameraFollow.eulerAngles.x - weaponAngelXOffset, cameraFollow.eulerAngles.y - 8, cameraFollow.eulerAngles.z);
+        weapon.rotation = Quaternion.Slerp(weapon.rotation, weaponRotation, lerpRate * Time.deltaTime);
+    }
+
+
+    private float countTime = 0f;
+    private void Fire(Vector3 target)
+    {
+        GameObject obj = Instantiate(bulletObj);
+        obj.transform.position = spawmBulletPoint.position;
+        obj.gameObject.SetActive(true);
+        Debug.DrawLine(spawmBulletPoint.position, target, Color.red, 1);
+        BulletMove move = obj.GetComponent<BulletMove>();
+        move.MoveToTarget(target);
+    }
+
+    private Vector3 GetFireTarget()
+    {
+        Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
+        if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, bulletContactMask))
+        {
+            Debug.DrawLine(Camera.main.transform.position, hitInfo.point, Color.red, 1);
+            return hitInfo.point;
+        }
+        return Vector3.zero;
     }
 }
