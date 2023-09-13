@@ -109,7 +109,7 @@ public class CharacterMovement : MonoBehaviour
         cameraFollow.rotation = Quaternion.Slerp(cameraFollow.rotation, cameraRotation, lerpRate * Time.deltaTime);
         cameraFollow.position = transform.position + Vector3.up * cameraTargetOffset.y + transform.right * cameraTargetOffset.x + transform.forward * cameraTargetOffset.z;
 
-        Quaternion weaponRotation = Quaternion.Euler(cameraFollow.eulerAngles.x - weaponAngelXOffset, cameraFollow.eulerAngles.y - 8, cameraFollow.eulerAngles.z);
+        Quaternion weaponRotation = Quaternion.Euler(cameraFollow.eulerAngles.x - weaponAngelXOffset, cameraFollow.eulerAngles.y - 4, cameraFollow.eulerAngles.z);
         weapon.rotation = Quaternion.Slerp(weapon.rotation, weaponRotation, lerpRate * Time.deltaTime);
     }
 
