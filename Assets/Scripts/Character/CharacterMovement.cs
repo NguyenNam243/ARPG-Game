@@ -25,6 +25,8 @@ public class CharacterMovement : MonoBehaviour
     public LayerMask bulletContactMask;
     public float fireDelayTime = 0.2f;
     public GameObject bulletObj = null;
+    public ParticleSystem explositionFx = null;
+    public GameObject bomb = null;
 
 
 
@@ -100,7 +102,51 @@ public class CharacterMovement : MonoBehaviour
             if (countTime >= fireDelayTime)
                 countTime = 0;
         }
+
+        if (!isThrow && Input.GetKeyDown(KeyCode.Space))
+            isThrow = true;
+
+        if (isThrow)
+        {
+            Vector3 fireTarget = GetFireTarget();
+            if (fireTarget == Vector3.zero)
+                return;
+
+            countTime += Time.deltaTime;
+            float t = countTime / 2;
+
+            float height = Vector3.Distance(spawmBulletPoint.position, fireTarget) * 0.75f;
+
+            Vector3 p1 = Vector3.Lerp(spawmBulletPoint.position, fireTarget, 1 / 3f);
+            p1 = new Vector3(p1.x, p1.y + height, p1.z);
+
+            Vector3 p2 = Vector3.Lerp(spawmBulletPoint.position, fireTarget, 2 / 3f);
+            p2 = new Vector3(p2.x, p2.y + (height * 0.75f), p2.z);
+
+            Vector3 point = BezierMathf.GetBezierPoint(spawmBulletPoint.position, p1, p2, fireTarget, t);
+
+            if (bombObj == null)
+                bombObj = Instantiate(bomb);
+
+            bombObj.transform.LookAt(point);
+            bombObj.transform.position = point;
+
+            if (!bombObj.activeInHierarchy)
+                bombObj.SetActive(true);
+
+            if (t >= 1)
+            {
+                explositionFx.transform.position = fireTarget;
+                explositionFx.Play();
+                Destroy(bombObj);
+                isThrow = false;
+                countTime = 0;
+            }
+        }
     }
+
+    private bool isThrow = false;
+    private GameObject bombObj = null;
 
     private void LateUpdate()
     {
